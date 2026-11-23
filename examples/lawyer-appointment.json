@@ -1,0 +1,38 @@
+{
+ "court": "แพ่ง",
+ "date": {
+  "day": "๒๕",
+  "month": "ตุลาคม",
+  "year": "๒๕๖๙"
+ },
+ "case_kind": "แพ่ง",
+ "black_no": "พ.๑๒๓๔",
+ "black_year": "๖๙",
+ "plaintiffs": [
+  "นายสมมุติ ทดสอบดี"
+ ],
+ "defendants": [
+  "บริษัท ตัวอย่างการค้า จำกัด",
+  "นายตัวแทน สมมุติ",
+  "นางสาวผู้ค้ำ ประกันดี"
+ ],
+ "drafter": {
+  "name": "นายทนาย ตัวอย่าง",
+  "license": "",
+  "house_no": "๑๒๓",
+  "road": "ตัวอย่าง",
+  "subdistrict": "ตัวอย่าง",
+  "district": "ตัวอย่าง",
+  "province": "กรุงเทพมหานคร",
+  "postcode": "๑๐๑๐๐",
+  "phone": "",
+  "email": "lawyer@example.com"
+ },
+ "form": "lawyer_appointment",
+ "appointer_line": "นายสมมุติ ทดสอบดี โจทก์",
+ "appointer_names": [
+  "นายสมมุติ ทดสอบดี"
+ ],
+ "lawyer_name": "นายทนาย ตัวอย่าง",
+ "license": ""
+}

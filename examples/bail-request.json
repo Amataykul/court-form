@@ -1,0 +1,17 @@
+{
+  "form": "bail_request",
+  "court": "จังหวัดนครราชสีมา",
+  "date": {"day": "๒", "month": "ธันวาคม", "year": "๒๕๖๙"},
+  "black_no": "อ.๗๘๙", "black_year": "๖๙",
+  "plaintiffs": ["พนักงานอัยการจังหวัดนครราชสีมา"],
+  "defendants": ["นางสาวทดสอบ ยื่นประกัน"],
+  "filer": {"name": "นางสาวทดสอบ ยื่นประกัน"},
+  "stage": "พิจารณา",
+  "relatives": [
+    {"name": "นายประกัน มั่นคง", "relation": "บิดา", "phone": "๐๘๑-๑๑๑-๑๑๑๑"},
+    {"name": "นางมารดา มั่นคง", "relation": "มารดา", "phone": "๐๘๑-๒๒๒-๒๒๒๒"}
+  ],
+  "agree_conditions": true,
+  "agree_em": true,
+  "signer_name": "นางสาวทดสอบ ยื่นประกัน"
+}

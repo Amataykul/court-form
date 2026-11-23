@@ -1,0 +1,116 @@
+{
+ "form": "complaint",
+ "court": "แพ่ง",
+ "date": {
+  "day": "๒๕",
+  "month": "ตุลาคม",
+  "year": "๒๕๖๙"
+ },
+ "case_kind": "อาญา",
+ "charge": "ฉ้อโกง",
+ "claim_baht": "-",
+ "claim_satang": "-",
+ "plaintiffs": [
+  {
+   "name": "นายสมมุติ ทดสอบดี",
+   "id": "",
+   "race": "ไทย",
+   "nationality": "ไทย",
+   "occupation": "ค้าขาย",
+   "age": "๕๒",
+   "house_no": "๙๙/๑๒",
+   "moo": "",
+   "road": "พหลโยธิน",
+   "soi": "พหลโยธิน ๑๒",
+   "subdistrict": "สามเสนใน",
+   "district": "พญาไท",
+   "province": "กรุงเทพมหานคร",
+   "postcode": "๑๐๔๐๐",
+   "phone": "๐๘๙ ๐๐๐ ๐๐๐๐",
+   "fax": "",
+   "email": ""
+  }
+ ],
+ "defendants": [
+  {
+   "name": "บริษัท ตัวอย่างการค้า จำกัด",
+   "race": "-",
+   "nationality": "ไทย",
+   "occupation": "นิติบุคคล",
+   "age": "-",
+   "house_no": "๑๒๓",
+   "moo": "๔",
+   "road": "บางนา-ตราด",
+   "soi": "",
+   "subdistrict": "บางพลีใหญ่",
+   "district": "บางพลี",
+   "province": "สมุทรปราการ",
+   "postcode": "๑๐๕๔๐",
+   "phone": "",
+   "fax": "",
+   "email": "",
+   "extra": "โดยนายตัวแทน สมมุติ กรรมการผู้มีอำนาจกระทำการแทน"
+  },
+  {
+   "name": "นายตัวแทน สมมุติ",
+   "race": "ไทย",
+   "nationality": "ไทย",
+   "occupation": "กรรมการบริษัท",
+   "age": "๔๗",
+   "house_no": "๕/๘",
+   "moo": "๒",
+   "road": "",
+   "soi": "",
+   "subdistrict": "บางเมือง",
+   "district": "เมืองสมุทรปราการ",
+   "province": "สมุทรปราการ",
+   "postcode": "๑๐๒๗๐"
+  },
+  {
+   "name": "นางสาวผู้ค้ำ ประกันดี",
+   "race": "ไทย",
+   "nationality": "ไทย",
+   "occupation": "รับราชการ",
+   "age": "๔๑",
+   "house_no": "๗๗",
+   "moo": "",
+   "road": "ลาดพร้าว",
+   "soi": "ลาดพร้าว ๑๐๑",
+   "subdistrict": "คลองจั่น",
+   "district": "บางกะปิ",
+   "province": "กรุงเทพมหานคร",
+   "postcode": "๑๐๒๔๐"
+  }
+ ],
+ "body": [
+  "ข้อ ๑. [ฐานะของโจทก์และจำเลย]",
+  "ข้อ ๒. [การกระทำของจำเลยแต่ละคน วัน เวลา สถานที่ และพฤติการณ์ ตามลำดับเวลา]",
+  "ข้อ ๓. [ความเสียหาย และการร้องทุกข์ภายในอายุความ]",
+  {
+   "text": "ควรมิควรแล้วแต่จะโปรด",
+   "align": "center"
+  }
+ ],
+ "prayer": {
+  "type": "criminal",
+  "sections": "[ระบุบทมาตราที่เปิดจาก thai-statutes แล้ว]",
+  "warrant": "เรียก",
+  "items": [
+   "๑. [คำขอให้ลงโทษ]",
+   "๒. [คำขอให้คืนหรือใช้ราคาทรัพย์ ถ้ามี]"
+  ],
+  "copies": "สาม"
+ },
+ "drafter": {
+  "name": "นายทนาย ตัวอย่าง",
+  "license": "",
+  "house_no": "๑๒๓",
+  "road": "ตัวอย่าง",
+  "subdistrict": "ตัวอย่าง",
+  "district": "ตัวอย่าง",
+  "province": "กรุงเทพมหานคร",
+  "postcode": "๑๐๑๐๐",
+  "phone": "",
+  "email": "lawyer@example.com"
+ }
+}
