@@ -280,8 +280,10 @@ def window(fid, top, start, cap, used, P, left=LM, right=RM, rule="solid", cols=
 
 # ---------------------------------------------------------------- คู่ความ
 def P_(x):
-    """คู่ความรับได้ทั้ง dict และสตริงชื่อ"""
-    return {"name": x} if isinstance(x, str) else dict(x)
+    """คู่ความรับได้ทั้ง dict และสตริงชื่อ · ไม่มีชื่อ = ช่องว่างไว้เขียนเอง ไม่ใช่ข้อผิดพลาด"""
+    d = {"name": x} if isinstance(x, str) else dict(x or {})
+    d.setdefault("name", "")
+    return d
 
 
 def bkk(p):
@@ -524,11 +526,12 @@ def std_closing(S, doc_word, signer_label, signer_name):
     dr = lawyer(S, "drafter")
     out = [{"keep": [{"text": "ควรมิควรแล้วแต่จะโปรด", "align": "center"},
                      {"sign": signer_label, "name": signer_name}]}]
-    if dr.get("name"):
-        role = S.get("drafter_role", dr.get("role", ""))
-        out.append({"keep": [
-            {"text": f"{doc_word}ฉบับนี้ ข้าพเจ้า [[{dr['name']}]] [[{role}]] เป็นผู้เรียงและพิมพ์".replace("[[]]", "").replace("  ", " ")},
-            {"sign": "ผู้เรียงและพิมพ์", "name": dr["name"]}]})
+    role = S.get("drafter_role", dr.get("role", ""))
+    nm = dr.get("name", "")
+    who = (f"[[{nm}]] [[{role}]]" if nm else "​" + "." * 60) if (nm or role) else "​" + "." * 60
+    out.append({"keep": [
+        {"text": f"{doc_word}ฉบับนี้ ข้าพเจ้า {who} เป็นผู้เรียงและพิมพ์".replace("[[]]", "").replace("  ", " ")},
+        {"sign": "ผู้เรียงและพิมพ์", "name": nm or None}]})
     return out
 
 
@@ -712,6 +715,11 @@ def form_proxy(S, flows, seq):
     pg.add(text_at(t + 3, LM, "ทำการแทน โดยข้าพเจ้ายอมรับผิดชอบในการที่ผู้รับมอบฉันทะของข้าพเจ้าได้ทำการไปนั้นทุกประการ")); t += ROW
     pg.add(text_at(t + 3, LM, "ในกิจการดังที่จะกล่าวต่อไปนี้")); t += ROW
     flows["tasks"] = body_flow(S["tasks"])
+    S["_docx_body"] = ([{"text": f'ข้าพเจ้า {(g["name"] + " " + g.get("role_text", "")).strip()} ขอมอบฉันทะให้ {r["name"]} '
+                                 'ทำการแทน โดยข้าพเจ้ายอมรับผิดชอบในการที่ผู้รับมอบฉันทะของข้าพเจ้าได้ทำการไปนั้นทุกประการ ในกิจการดังที่จะกล่าวต่อไปนี้'}]
+                       + [{"text": x} for x in S["tasks"]]
+                       + [{"sign": "ผู้มอบฉันทะ", "name": g["name"]}, {"sign": "ผู้รับมอบฉันทะ", "name": r["name"]},
+                          {"sign": "พยาน", "name": S.get("witness1")}, {"sign": "พยาน", "name": S.get("witness2")}])
     pg.flow = ("tasks", t - 2, 705, {"pitch": 25, "strict": "กิจการที่มอบฉันทะยาวเกินช่องในแบบ — ย่อข้อความ"})
     pg.add(sigline(742, 120, 250, "ผู้มอบฉันทะ", g["name"]) + sigline(742, 345, 475, "ผู้รับมอบฉันทะ", r["name"]))
     pg.add(sigline(800, 120, 250, "พยาน", S.get("witness1")) + sigline(800, 345, 475, "พยาน", S.get("witness2")))
@@ -750,6 +758,13 @@ def form_witness_list(S, flows, seq):
     pg.add(row(t, [("t", "ขอระบุพยานของข้าพเจ้ารวม"), ("f", th(len(ws)), 50, "จำนวนอันดับ"),
                    ("t", "อันดับ ตามบัญชีตารางข้างล่างนี้")])); t += ROW + 6
     t = witness_head(pg, t)
+    wrows = [["อันดับ", "ชื่อพยาน", "ที่อยู่", "หมายเหตุ"]]
+    for i, w in enumerate(ws, 1):
+        w = P_(w)
+        addr = " ".join(x for x in (w.get("address1", ""), w.get("address2", "")) if x)
+        wrows.append([th(i), w.get("name", ""), addr, w.get("note", "")])
+    S["_docx_extra"] = (_tbl(wrows, [700, 2600, 4150, 1600])
+                        + _sig(S.get("signer_label", "ผู้ระบุ"), S.get("signer_name")))
     flows["wit"] = witness_flow(ws)
     pg.flow = ("wit", t, 690, {"cols": WCOLS, "frame": True})
     signer = S.get("signer_label", "ผู้ระบุ")
@@ -797,6 +812,17 @@ def form_lawyer_appointment(S, flows, seq):
                              "หรือฎีกา หรือขอให้พิจารณาคดีใหม่")
     flows["pw"] = (f'<div class="noind">เป็นทนายความของข้าพเจ้าในคดีนี้ และให้มีอำนาจ <sup>*</sup> '
                    f'{rich(powers)}</div>')
+    nsig = max(1, int(S.get("appointer_signatures", 1)))
+    S["_docx_body"] = ([{"text": f'ข้าพเจ้า {S.get("appointer_line", "")} ขอแต่งให้ '
+                                 f'{S.get("lawyer_name", lw.get("name", ""))} ใบอนุญาตว่าความเลขที่ '
+                                 f'{S.get("license", lw.get("license", ""))} เป็นทนายความของข้าพเจ้าในคดีนี้ '
+                                 f'และให้มีอำนาจ {powers}'},
+                       {"text": "ข้าพเจ้ายอมรับผิดชอบตามที่ทนายความจะได้ดำเนินกระบวนพิจารณาต่อไปตามกฎหมาย"}]
+                      + [{"sign": "ผู้แต่งทนายความ", "name": (S.get("appointer_names") or [None] * nsig)[i]}
+                         for i in range(nsig)]
+                      + [{"text": "คำรับเป็นทนายความ", "align": "center"},
+                         {"text": "ข้าพเจ้าขอรับเป็นทนายความเพื่อดำเนินกระบวนพิจารณาต่อไปตามหน้าที่ในกฎหมาย"},
+                         {"sign": "ทนายความ", "name": None}])
     pg.flow = ("pw", t - 5, t - 5 + 3 * 22, {"pitch": 22, "rule": "dotted", "left": 72, "right": 530,
                                              "strict": "ข้อความอำนาจทนายความยาวเกิน ๓ บรรทัด"})
     t += 3 * 22 + 2
@@ -856,6 +882,8 @@ def form_witness_statement(S, flows, seq):
     pg.add(row(t, [("t", "๓.  ตำแหน่งหรืออาชีพ"), ("f", w.get("occupation", ""), None, "อาชีพ")])); t += ROW
     pg.add(row(t, [("t", "๔.  ภูมิลำเนา"), ("f", w.get("domicile", ""), None, "ภูมิลำเนา")])); t += ROW
     pg.add(row(t, [("t", "๕.  เกี่ยวพันกับคู่ความ"), ("f", w.get("relation", ""), None, "เกี่ยวพันกับคู่ความ")])); t += ROW
+    if S.get("place"):
+        pg.add(row(t, [("t", "ทำบันทึกถ้อยคำนี้ที่"), ("f", S.get("place", ""), None, "สถานที่ทำบันทึก")])); t += ROW
     lead = S.get("lead", "ขอยืนยันข้อเท็จจริงหรือความเห็นของข้าพเจ้าต่อศาลแทนการซักถามว่า")
     body = [{"text": lead + " " + S["body"][0], "align": ""}] + list(S["body"][1:]) if S.get("body") else []
     sg = S.get("signers", {})
@@ -954,6 +982,24 @@ def form_bail_request(S, flows, seq):
     pg.add(row(t, [("h", cb(S.get("agree_em", False))), ("sp", 4),
                    ("h", "ข้าพเจ้ายินยอมใช้อุปกรณ์อิเล็กทรอนิกส์สำหรับติดตามตัว (EM) ในระหว่างปล่อยชั่วคราว")])); t += R
     body = list(S.get("body", []))
+    mark = lambda on: "[X]" if on else "[  ]"
+    dx = [{"text": f'ข้าพเจ้า {f.get("name", "")} {lab} ขอยื่นคำร้องขอให้ศาลปล่อยชั่วคราว มีข้อความตามที่จะกล่าวต่อไปนี้'},
+          {"text": "ข้อ ๑. ข้าพเจ้าประสงค์ขอให้ปล่อยชั่วคราวในชั้น "
+                   + "  ".join(f"{mark(stage == x)} {x}" for x in BAIL_STAGES)}]
+    if rel:
+        dx.append({"text": "โดยมีญาติหรือบุคคลที่สามารถติดต่อได้ ดังนี้"})
+        for i, r in enumerate(rel, 1):
+            dx.append({"text": f'{th(i)}. ชื่อ {r.get("name", "")} เกี่ยวข้องเป็น {r.get("relation", "")} '
+                               f'หมายเลขโทรศัพท์ {r.get("phone", "")}'})
+    dx.append({"text": f'{mark(S.get("agree_conditions", True))} ข้าพเจ้ายินยอมปฏิบัติตามคำสั่งหรือเงื่อนไขใด ๆ ของศาล'
+                       'เพื่อป้องกันการหลบหนี หรือเหตุอันตราย หรือความเสียหายที่อาจเกิดขึ้นจากการปล่อยชั่วคราว '
+                       'รวมถึงการใช้มาตรการกำกับดูแลผู้ถูกปล่อยชั่วคราว'})
+    dx.append({"text": f'{mark(S.get("agree_em", False))} ข้าพเจ้ายินยอมใช้อุปกรณ์อิเล็กทรอนิกส์สำหรับติดตามตัว (EM) '
+                       'ในระหว่างปล่อยชั่วคราว'})
+    dx += body + [{"text": "ขอประทานศาลได้โปรดพิจารณาคำร้องนี้ด้วย"},
+                  {"text": "ควรมิควรแล้วแต่จะโปรด", "align": "center"},
+                  {"sign": S.get("signer_label", lab), "name": S.get("signer_name")}]
+    S["_docx_body"] = dx
     flows["body"] = body_flow(body) if body else ""
     if body:
         pg.flow = ("body", t + 4, 580)
@@ -1061,6 +1107,14 @@ def form_property_list(S, flows, seq):
     pg.add(text_at(702, LM + sum(PCOLS[:3]), esc(S.get("total_baht", "")), f"width:{PCOLS[3]}pt;text-align:center"))
     pg.add(text_at(702, LM + sum(PCOLS[:4]), esc(S.get("total_satang", "")), f"width:{PCOLS[4]}pt;text-align:center"))
     pg.add(sigline(770, 330, 505, S.get("signer_label", "ผู้ยื่น"), S.get("signer_name"), prefix=None))
+    rows = [["อันดับ", "รายการ", "จำนวน", "บาท", "สตางค์", "หมายเหตุ"]]
+    for i, it in enumerate(items, 1):
+        it = P_(it)
+        rows.append([th(it.get("no", i)), it.get("name", ""), it.get("qty", ""),
+                     it.get("baht", ""), it.get("satang", ""), it.get("note", "")])
+    rows.append(["", "รวม", "", S.get("total_baht", ""), S.get("total_satang", ""), ""])
+    S["_docx_extra"] = (_tbl(rows, [750, 3250, 1100, 1450, 950, 1550])
+                        + _sig(S.get("signer_label", "ผู้ยื่น"), S.get("signer_name")))
     seq.append(pg)
     S["_prop_head"] = True
 
@@ -1124,6 +1178,24 @@ def _sig(label, name=None):
     return "".join(out)
 
 
+def _tbl(rows, widths, head=True):
+    """ตารางใน .docx — rows[0] เป็นหัวตารางถ้า head=True · widths หน่วย twip"""
+    out = ['<w:tbl><w:tblPr><w:tblStyle w:val="TableGrid"/><w:tblW w:w="0" w:type="auto"/>'
+           '<w:tblBorders>' + "".join(
+               f'<w:{k} w:val="single" w:sz="6" w:space="0" w:color="000000"/>'
+               for k in ("top", "left", "bottom", "right", "insideH", "insideV")) + '</w:tblBorders></w:tblPr>'
+           '<w:tblGrid>' + "".join(f'<w:gridCol w:w="{int(w)}"/>' for w in widths) + '</w:tblGrid>']
+    for i, r in enumerate(rows):
+        out.append("<w:tr>")
+        for j, c in enumerate(r):
+            al = "center" if (head and i == 0) else ("center" if j in (2, 3, 4) and len(r) >= 5 else "left")
+            out.append(f'<w:tc><w:tcPr><w:tcW w:w="{int(widths[j])}" w:type="dxa"/></w:tcPr>'
+                       + _p(str(c), al, b=(head and i == 0)) + "</w:tc>")
+        out.append("</w:tr>")
+    out.append("</w:tbl>" + _p())
+    return "".join(out)
+
+
 def docx_body(S, title):
     """เนื้อหา .docx ของทุกแบบ: หัวคดี → ย่อหน้าเปิด → เนื้อความ → ลงชื่อ
     เป็นร่างสำหรับแก้ต่อและพิมพ์ลงแบบพิมพ์ ไม่ใช่การวาดแบบพิมพ์ (ฉบับยื่นศาลใช้ PDF)"""
@@ -1175,6 +1247,9 @@ def docx_body(S, title):
                         ps.append(_p(k["text"], al, indent=0 if k.get("align") else int(TW * 2.54)))
     for s in S.get("_docx_tail", []):
         ps.append(_p(s, "center"))
+    extra = S.get("_docx_extra")
+    if extra:
+        ps.append(extra)
     return "".join(ps)
 
 
