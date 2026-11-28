@@ -753,16 +753,19 @@ def witness_head(pg, top):
 def form_witness_list(S, flows, seq):
     pg = Page("first")
     t = header(pg, S, "(๑๕)", "บัญชีพยาน")
-    ws = S["witnesses"]
+    # แถวสรุปท้ายตาราง (เช่น "///พยานบุคคล ๓ ปาก") ไม่มีเลขอันดับและไม่นับเป็นอันดับ
+    ws = list(S["witnesses"]) + [{"no": "", "name": x, "summary": True} for x in S.get("summary", [])]
+    ws = [dict(w, no="") if isinstance(w, dict) and w.get("summary") else w for w in ws]
+    n_wit = len([w for w in ws if not (isinstance(w, dict) and w.get("summary"))])
     pg.add(row(t, [("t", "ข้าพเจ้า"), ("f", S.get("filer_line", ""), None, "ข้าพเจ้า")], left=168)); t += ROW
-    pg.add(row(t, [("t", "ขอระบุพยานของข้าพเจ้ารวม"), ("f", th(len(ws)), 50, "จำนวนอันดับ"),
+    pg.add(row(t, [("t", "ขอระบุพยานของข้าพเจ้ารวม"), ("f", th(n_wit), 50, "จำนวนอันดับ"),
                    ("t", "อันดับ ตามบัญชีตารางข้างล่างนี้")])); t += ROW + 6
     t = witness_head(pg, t)
     wrows = [["อันดับ", "ชื่อพยาน", "ที่อยู่", "หมายเหตุ"]]
     for i, w in enumerate(ws, 1):
         w = P_(w)
         addr = " ".join(x for x in (w.get("address1", ""), w.get("address2", "")) if x)
-        wrows.append([th(i), w.get("name", ""), addr, w.get("note", "")])
+        wrows.append([th(w.get("no", i)), w.get("name", ""), addr, w.get("note", "")])
     S["_docx_extra"] = (_tbl(wrows, [700, 2600, 4150, 1600])
                         + _sig(S.get("signer_label", "ผู้ระบุ"), S.get("signer_name")))
     flows["wit"] = witness_flow(ws)
